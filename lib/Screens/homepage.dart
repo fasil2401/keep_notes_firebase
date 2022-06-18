@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -25,38 +26,8 @@ class _HomePageState extends State<HomePage> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   IconData viewType = Icons.grid_view;
   String searchText = '';
-  String note =
-      ' elit. F eet vitae nisi. Quisque. Duis pellentesque consectetur lacus. In quis dui et purus congue accumsan pulvinar vel lorem. Phasellus ultricies maximus odio ut ultricies. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque nec vulputate massa. Fusce magna massa, molestie at euismod eget, condimentum ut eros. In hac habitasse platea dictumst. Aenean dignissim dolor eu ante vestibulum dictum. Integer mi tortor, fringilla sed sapien et, fermentum consectetur est. Nunc porta leo id tortor imperdiet dictum.';
-  String note1 =
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elitamet, consectetur adipiscing elit. Fusce molestie lor.';
-
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  //   //createEntry(KeepNote(pin: false, title: 'Salman', content: 'This is salman doing google keep notes This is salman doing google keep notes  elit. F eet vitae nisi. Quisque. Duis pellentesque consectetur lacus. In quis dui et purus congue accumsan pulvinar vel lorem. Phasellus ultricies maximus odio ut ultricies. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque nec vulputate massa. Fusce magna massa, molestie at euismod eget, condimentum ut eros. In hac habitasse platea dictumst. Aenean dignissim dolor eu ante vestibulum dictum. Integer mi tortor, fringilla sed sapien et, fermentum consectetur est. Nunc porta leo id tortor imperdiet dictum ', createdTime: DateTime.now(), isArchieve: false));
-  //   getAllNotes();
-  // }
-
-  // Future createEntry(KeepNote note) async {
-  //   await KeepNotesDatabase.instance.InsertEntry(note);
-   
-  // }
-
-  // Future<String?> getAllNotes() async {
-  //   this.notesList = await KeepNotesDatabase.instance.readAllNotes();
-  //  setState(() {
-  //     isLoading = false;
-  //   });
-  // }
-
-  // Future<String?> getOneNote(int id) async {
-  //   await KeepNotesDatabase.instance.readOneNote(id);
-  // }
-
-  // Future updateOneNote(KeepNote note) async {
-  //   await KeepNotesDatabase.instance.updateNote(note);
-  // }
+final _notes =
+      FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -117,9 +88,9 @@ class _HomePageState extends State<HomePage> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => SearchView()));
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 180.w,
-                        child: Text(
+                        child:const Text(
                           'Search our Notes',
                           style: TextStyle(
                               color: Colors.grey,
@@ -158,19 +129,29 @@ class _HomePageState extends State<HomePage> {
           ];
         },
         body: SingleChildScrollView(
-          child: Column(
-            children: [
-              viewType == Icons.grid_view
-                  ? noteSectionAll()
-                  : noteSectionList(),
-            ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _notes.collection('notes').snapshots(),
+            builder: (context, snapshot) {
+             if(snapshot.hasData){
+               return Column(
+                children: [
+                  viewType == Icons.grid_view
+                      ? noteSectionAll(snapshot.data!.docs)
+                      : noteSectionList(snapshot.data!.docs),
+                ],
+              );
+             }
+             else{
+                return Center(child: CircularProgressIndicator(color: Colors.white,),);
+             }
+            }
           ),
         ),
       ),
     );
   }
 
-  Widget noteSectionAll() {
+  Widget noteSectionAll(list) {
     return Column(
       children: [
         Container(
@@ -198,7 +179,7 @@ class _HomePageState extends State<HomePage> {
           child: StaggeredGridView.countBuilder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: 10,
+            itemCount: list.length,
             mainAxisSpacing: 10.h,
             crossAxisSpacing: 10.w,
             crossAxisCount: 4,
@@ -206,12 +187,13 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) => InkWell(
               onTap: () {
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => NoteView()));
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
               },
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: index.isEven ? Colors.green : Colors.amber,
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
                     border: Border.all(color: white.withOpacity(0.4)),
                     borderRadius: BorderRadius.circular(7)),
                 child: Column(
@@ -219,20 +201,23 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Row(
                       children:  [
-                       const Expanded(
+                        Expanded(
                           child: Text(
                             // notesList[index].title,
-                            'Heading',
+                            list[index]['title'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: white,
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Icon(Icons.push_pin, size: 15,
-                        color: white,
+                        Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
                         ),
                         SizedBox(width:2.w),
                         Icon(Icons.lock_clock, size: 15,
@@ -245,27 +230,24 @@ class _HomePageState extends State<HomePage> {
                       height: 10,
                     ),
                     Text(
-                      // notesList[index].content.length > 250
-                      //     ? "${notesList[index].content.substring(0, 250)}..."
-                      //     : notesList[index].content,
-                      note1,
-                      style: const TextStyle(
-                        color: white,
+                      list[index]['note'],
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                       ),
                     ),
                    const SizedBox(
                       height: 10,
                     ),
-                   const Align(
+                    Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
                       // notesList[index].content.length > 250
                       //     ? "${notesList[index].content.substring(0, 250)}..."
                       //     : notesList[index].content,
-                      '12-31-2022',
+                      dateFormat.format(list[index]['createdtime'].toDate()),
                       style:  TextStyle(
-                        color: white,
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold
                       ),
@@ -281,7 +263,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget noteSectionList() {
+  Widget noteSectionList(list) {
     return Column(
       children: [
         Container(
@@ -309,18 +291,19 @@ class _HomePageState extends State<HomePage> {
           child: ListView.builder(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: 10,
+            itemCount: list.length,
             itemBuilder: (context, index) => InkWell(
               onTap: () {
-                // Navigator.of(context)
-                //     .push(MaterialPageRoute(builder: (context) => NoteView(note: notesList[index],)));
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
               },
 
               child: Container(
                 margin: EdgeInsets.only(bottom: 10.h),
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: index.isEven ? Colors.green : Colors.amber,
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
                     border: Border.all(color: white.withOpacity(0.4)),
                     borderRadius: BorderRadius.circular(7)),
                 child: Column(
@@ -328,22 +311,25 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Row(
                       children:  [
-                       const Expanded(
+                        Expanded(
                           child: Text(
                             // notesList[index].title,
-                            'Heading',
+                            list[index]['title'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: white,
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Icon(Icons.push_pin, size: 15,
-                        color: white,
+                         Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
                         ),
-                        SizedBox(width:8.w),
+                        SizedBox(width:2.w),
                         Icon(Icons.lock_clock, size: 15,
                         color: white,
                         ),
@@ -354,27 +340,27 @@ class _HomePageState extends State<HomePage> {
                       height: 10,
                     ),
                     Text(
-                      note,
+                       list[index]['note'],
                       // notesList[index].content.length > 250
                       //       ? "${notesList[index].content.substring(0, 250)}..."
                       //       : notesList[index].content,
-                      style: const TextStyle(
-                        color: white,
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(
                       height: 10,
                     ),
-                   const Align(
+                    Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
                       // notesList[index].content.length > 250
                       //     ? "${notesList[index].content.substring(0, 250)}..."
                       //     : notesList[index].content,
-                      '12-31-2022',
+                      dateFormat.format(list[index]['createdtime'].toDate()),
                       style:  TextStyle(
-                        color: white,
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold
                       ),

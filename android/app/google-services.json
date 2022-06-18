@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "309488601417",
+    "project_id": "my-firebase-try",
+    "storage_bucket": "my-firebase-try.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309488601417:android:0635f2932359dbd50cb298",
+        "android_client_info": {
+          "package_name": "com.example.kepp_notes_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "309488601417-ghbbonvm9eg69g3jn4kpas4a607tghhp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNbLW0zFu33HV8JX1_Jb7RlnpZHdGAMXY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "309488601417-ghbbonvm9eg69g3jn4kpas4a607tghhp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
