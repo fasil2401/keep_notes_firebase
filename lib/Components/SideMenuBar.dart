@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import '../Providers/colors.dart';
 import '../Screens/archive.dart';
@@ -142,7 +143,9 @@ class _SideMenuState extends State<SideMenu> {
           ),
         ),
         onPressed: () {
+          Get.back();
           Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SettingsScreen()));
+          
         },
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w),

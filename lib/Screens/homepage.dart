@@ -133,11 +133,27 @@ final _notes =
             stream: _notes.collection('notes').snapshots(),
             builder: (context, snapshot) {
              if(snapshot.hasData){
+              var list = snapshot.data!.docs;
+                var finalList = [];
+                var pinnedList = [];
+                list.forEach((element) {
+                  if (element['isarchieve'] != true) {
+                    finalList.add(element);
+                  }
+                   if (element['ispinned'] == true && element['isarchieve'] != true) {
+                    pinnedList.add(element);
+                  }
+                }
+                );
                return Column(
                 children: [
                   viewType == Icons.grid_view
-                      ? noteSectionAll(snapshot.data!.docs)
-                      : noteSectionList(snapshot.data!.docs),
+                      ? noteSectionPinnedGrid(pinnedList)
+                      : noteSectionListPinned(pinnedList),
+
+                  viewType == Icons.grid_view
+                      ? noteSectionAll(finalList)
+                      : noteSectionList(finalList),
                 ],
               );
              }
@@ -150,6 +166,238 @@ final _notes =
       ),
     );
   }
+
+// pinned section start
+
+Widget noteSectionPinnedGrid(list) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                "PINNED",
+                style: TextStyle(
+                  color: white.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 3.h,
+          ),
+          // height: 500,
+          child: StaggeredGridView.countBuilder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: list.length,
+            mainAxisSpacing: 10.h,
+            crossAxisSpacing: 10.w,
+            crossAxisCount: 4,
+            staggeredTileBuilder: (index) => const StaggeredTile.fit(2),
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
+                    border: Border.all(color: white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Expanded(
+                          child: Text(
+                            // notesList[index].title,
+                            list[index]['title'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
+                        ),
+                        SizedBox(width:2.w),
+                        Icon(Icons.lock_clock, size: 15,
+                        color: white,
+                        ),
+                        
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      list[index]['note'],
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                   const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                      // notesList[index].content.length > 250
+                      //     ? "${notesList[index].content.substring(0, 250)}..."
+                      //     : notesList[index].content,
+                      dateFormat.format(list[index]['createdtime'].toDate()),
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget noteSectionListPinned(list) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                "PINNED",
+                style: TextStyle(
+                  color: white.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 3.h,
+          ),
+          // height: 500,
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: list.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+
+              child: Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
+                    border: Border.all(color: white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Expanded(
+                          child: Text(
+                            // notesList[index].title,
+                            list[index]['title'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                         Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
+                        ),
+                        SizedBox(width:2.w),
+                        Icon(Icons.lock_clock, size: 15,
+                        color: white,
+                        ),
+                        
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                       list[index]['note'],
+                      // notesList[index].content.length > 250
+                      //       ? "${notesList[index].content.substring(0, 250)}..."
+                      //       : notesList[index].content,
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                      // notesList[index].content.length > 250
+                      //     ? "${notesList[index].content.substring(0, 250)}..."
+                      //     : notesList[index].content,
+                      dateFormat.format(list[index]['createdtime'].toDate()),
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
+// pinned section end
 
   Widget noteSectionAll(list) {
     return Column(
@@ -173,7 +421,7 @@ final _notes =
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 10.w,
-            vertical: 15.h,
+            vertical: 3.h,
           ),
           // height: 500,
           child: StaggeredGridView.countBuilder(
@@ -285,7 +533,7 @@ final _notes =
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 10.w,
-            vertical: 15.h,
+            vertical: 3.h,
           ),
           // height: 500,
           child: ListView.builder(

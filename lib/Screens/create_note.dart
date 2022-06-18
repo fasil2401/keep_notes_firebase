@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kepp_notes_clone/model/note_model.dart';
 import 'package:kepp_notes_clone/services/services.dart';
-
 import '../Providers/colors.dart';
 import 'homepage.dart';
 

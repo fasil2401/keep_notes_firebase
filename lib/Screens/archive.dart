@@ -1,11 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kepp_notes_clone/Screens/search_page.dart';
 
 import '../Components/SideMenuBar.dart';
 import '../Providers/colors.dart';
 import 'create_note.dart';
+import 'note_view.dart';
+
 class ArchiveView extends StatefulWidget {
   const ArchiveView({Key? key}) : super(key: key);
 
@@ -22,6 +26,7 @@ class _ArchiveViewState extends State<ArchiveView> {
   String note1 =
       'Lorem ipsum dolor sit amet, consectetur adipiscing elitamet, consectetur adipiscing elit. Fusce molestie lor.';
 
+  final _notes = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,13 +35,15 @@ class _ArchiveViewState extends State<ArchiveView> {
       drawer: SideMenu(),
       backgroundColor: bgColor,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: black,
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CreateNoteView()));
-        },
-        child: Icon(Icons.add,
-        size: 40.w,)
-      ),
+          backgroundColor: black,
+          onPressed: () {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => CreateNoteView()));
+          },
+          child: Icon(
+            Icons.add,
+            size: 40.w,
+          )),
       body: NestedScrollView(
         floatHeaderSlivers: true,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -74,14 +81,20 @@ class _ArchiveViewState extends State<ArchiveView> {
                     SizedBox(
                       width: 6.w,
                     ),
-                    Container(
-                      width: 180.w,
-                      child:const Text(
-                        'Search our Notes',
-                        style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400),
+                    GestureDetector(
+                       onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SearchView()));
+                      },
+                      child: SizedBox(
+                        width: 180.w,
+                        child: const Text(
+                          'Search our Notes',
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -114,27 +127,63 @@ class _ArchiveViewState extends State<ArchiveView> {
           ];
         },
         body: SingleChildScrollView(
-          child: Column(
-            children: [
-              viewType == Icons.grid_view ? noteSectionAll() :  
-              noteSectionList(),             
-            ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _notes.collection('notes').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                var list = snapshot.data!.docs;
+                var finalList = [];
+               var pinnedList = [];
+                list.forEach((element) {
+                  if (element['isarchieve'] == true &&
+                      element['ispinned'] == false) {
+                    finalList.add(element);
+                  }
+                   if (element['ispinned'] == true && element['isarchieve'] == true) {
+                    pinnedList.add(element);
+                  }
+                }
+                );
+
+                return Column(
+                children: [
+                  viewType == Icons.grid_view
+                      ? noteSectionPinnedGrid(pinnedList)
+                      : noteSectionListPinned(pinnedList),
+
+                  viewType == Icons.grid_view
+                      ? noteSectionAll(finalList)
+                      : noteSectionList(finalList),
+                ],
+              );
+              }
+              else{
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            }
           ),
         ),
       ),
     );
   }
 
-  Widget noteSectionAll() {
+
+
+
+// pinned section start
+
+Widget noteSectionPinnedGrid(list) {
     return Column(
       children: [
         Container(
-          margin:const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                "ALL",
+                "PINNED",
                 style: TextStyle(
                   color: white.withOpacity(0.5),
                   fontSize: 13,
@@ -147,49 +196,51 @@ class _ArchiveViewState extends State<ArchiveView> {
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 10.w,
-            vertical: 15.h,
+            vertical: 3.h,
           ),
           // height: 500,
           child: StaggeredGridView.countBuilder(
-            physics:const NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: 10,
+            itemCount: list.length,
             mainAxisSpacing: 10.h,
             crossAxisSpacing: 10.w,
             crossAxisCount: 4,
-            staggeredTileBuilder: (index) =>const StaggeredTile.fit(2),
-            itemBuilder: (context, index) =>
-             InkWell(
-               onTap: (){
-                //  Navigator
-                //  .of(context).push(MaterialPageRoute(builder: (context)=>NoteView()));
-               },
-               child: Container(
-
-                padding:const EdgeInsets.all(10),
+            staggeredTileBuilder: (index) => const StaggeredTile.fit(2),
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: index.isEven ? Colors.green : Colors.amber,
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
                     border: Border.all(color: white.withOpacity(0.4)),
                     borderRadius: BorderRadius.circular(7)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                   Row(
+                    Row(
                       children:  [
-                       const Expanded(
+                        Expanded(
                           child: Text(
                             // notesList[index].title,
-                            'Heading',
+                            list[index]['title'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: white,
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Icon(Icons.push_pin, size: 15,
-                        color: white,
+                        Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
                         ),
                         SizedBox(width:2.w),
                         Icon(Icons.lock_clock, size: 15,
@@ -198,32 +249,28 @@ class _ArchiveViewState extends State<ArchiveView> {
                         
                       ],
                     ),
-                   const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      index.isEven
-                          ? note.length > 250
-                              ? "${note.substring(0, 250)}..."
-                              : note
-                          : note1,
-                      style:const TextStyle(
-                        color: white,
-                        fontSize: 16,
-                      ),
-                    ),
                     const SizedBox(
                       height: 10,
                     ),
-                   const Align(
+                    Text(
+                      list[index]['note'],
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                   const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
                       // notesList[index].content.length > 250
                       //     ? "${notesList[index].content.substring(0, 250)}..."
                       //     : notesList[index].content,
-                      '12-31-2022',
+                      dateFormat.format(list[index]['createdtime'].toDate()),
                       style:  TextStyle(
-                        color: white,
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold
                       ),
@@ -231,25 +278,24 @@ class _ArchiveViewState extends State<ArchiveView> {
                     )
                   ],
                 ),
-                         ),
-             ),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
-
-    Widget noteSectionList() {
+  Widget noteSectionListPinned(list) {
     return Column(
       children: [
         Container(
-          margin:const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                "ALL",
+                "PINNED",
                 style: TextStyle(
                   color: white.withOpacity(0.5),
                   fontSize: 13,
@@ -262,85 +308,328 @@ class _ArchiveViewState extends State<ArchiveView> {
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 10.w,
-            vertical: 15.h,
+            vertical: 3.h,
           ),
           // height: 500,
           child: ListView.builder(
-
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: 10,
-            itemBuilder: (context, index) => Container(
-              margin: EdgeInsets.only(bottom: 10.h),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  color: index.isEven ? Colors.green : Colors.amber,
-                  border: Border.all(color: white.withOpacity(0.4)),
-                  borderRadius: BorderRadius.circular(7)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                 Row(
+            itemCount: list.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+
+              child: Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
+                    border: Border.all(color: white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children:  [
-                       const Expanded(
+                        Expanded(
                           child: Text(
                             // notesList[index].title,
-                            'Heading',
+                            list[index]['title'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: white,
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Icon(Icons.push_pin, size: 15,
-                        color: white,
+                         Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
                         ),
-                        SizedBox(width:8.w),
+                        SizedBox(width:2.w),
                         Icon(Icons.lock_clock, size: 15,
                         color: white,
                         ),
                         
                       ],
                     ),
-                 const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    index.isEven
-                        ? note.length > 250
-                            ? "${note.substring(0, 250)}..."
-                            : note
-                        : note1,
-                    style:const TextStyle(
-                      color: white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
-                   const Align(
+                    Text(
+                       list[index]['note'],
+                      // notesList[index].content.length > 250
+                      //       ? "${notesList[index].content.substring(0, 250)}..."
+                      //       : notesList[index].content,
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
                       // notesList[index].content.length > 250
                       //     ? "${notesList[index].content.substring(0, 250)}..."
                       //     : notesList[index].content,
-                      '12-31-2022',
+                      dateFormat.format(list[index]['createdtime'].toDate()),
                       style:  TextStyle(
-                        color: white,
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold
                       ),
                     ),
                     )
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
 
+
+
+
+// pinned section end
+
+
+
+
+
+  Widget noteSectionAll(list) {
+    
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                "ARCHIVE",
+                style: TextStyle(
+                  color: white.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 3.h,
+          ),
+          // height: 500,
+          child: StaggeredGridView.countBuilder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: list.length,
+            mainAxisSpacing: 10.h,
+            crossAxisSpacing: 10.w,
+            crossAxisCount: 4,
+            staggeredTileBuilder: (index) => const StaggeredTile.fit(2),
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
+                    border: Border.all(color: white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Expanded(
+                          child: Text(
+                            // notesList[index].title,
+                            list[index]['title'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
+                        ),
+                        SizedBox(width:2.w),
+                        Icon(Icons.lock_clock, size: 15,
+                        color: white,
+                        ),
+                        
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      list[index]['note'],
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                   const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                      // notesList[index].content.length > 250
+                      //     ? "${notesList[index].content.substring(0, 250)}..."
+                      //     : notesList[index].content,
+                      dateFormat.format(list[index]['createdtime'].toDate()),
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget noteSectionList(list) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                "ARCHIEVED",
+                style: TextStyle(
+                  color: white.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 3.h,
+          ),
+          // height: 500,
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: list.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => NoteView(list: list[index],)));
+              },
+
+              child: Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    // color: index.isEven ? Colors.green : Colors.amber,
+                    color: Color(int.parse(list[index]['color'])),
+                    border: Border.all(color: white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Expanded(
+                          child: Text(
+                            // notesList[index].title,
+                            list[index]['title'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                         Visibility(
+                          visible: list[index]['ispinned'],
+                          child: Icon(Icons.push_pin, size: 15,
+                          color:list[index]['color'] == '0xFF212227'? white : Colors.black,
+                          ),
+                        ),
+                        SizedBox(width:2.w),
+                        Icon(Icons.lock_clock, size: 15,
+                        color: white,
+                        ),
+                        
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                       list[index]['note'],
+                      // notesList[index].content.length > 250
+                      //       ? "${notesList[index].content.substring(0, 250)}..."
+                      //       : notesList[index].content,
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                      // notesList[index].content.length > 250
+                      //     ? "${notesList[index].content.substring(0, 250)}..."
+                      //     : notesList[index].content,
+                      dateFormat.format(list[index]['createdtime'].toDate()),
+                      style:  TextStyle(
+                        color: list[index]['color'] == '0xFF212227'? white : Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

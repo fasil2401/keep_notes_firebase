@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kepp_notes_clone/model/note_model.dart';
-
 import '../Providers/colors.dart';
 import '../services/services.dart';
+import 'edit_note.dart';
 
 class NoteView extends StatefulWidget {
   // KeepNote note;
@@ -80,10 +80,9 @@ class _NoteViewState extends State<NoteView> {
             ),
             IconButton(
               onPressed: () {
-                // Navigator.of(context).push(MaterialPageRoute(
-                //     builder: (context) => EditNoteView(
-                //           note: widget.note,
-                //         )));
+                Get.to(EditNoteView(
+                  list: widget.list,
+                ));
               },
               splashRadius: 20.w,
               icon: Icon(Icons.edit_outlined),
