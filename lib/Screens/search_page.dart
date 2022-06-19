@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -19,6 +20,10 @@ class _SearchViewState extends State<SearchView> {
 var searchList = [];
   @override
   Widget build(BuildContext context) {
+     final user = FirebaseAuth
+        .instance
+        .currentUser;
+    final email = user!.email;   
     return Scaffold(
       backgroundColor: bgColor,
       body: SingleChildScrollView(
@@ -68,8 +73,9 @@ var searchList = [];
                                 // searchList.clear();
                                 if (element['title'].toString().toLowerCase().contains(value.toLowerCase())) {
                                   setState(() {
-                                    
+                                    searchList.clear();
                                     searchList.add(element);
+                                    
                                   });
                                 
                                 }

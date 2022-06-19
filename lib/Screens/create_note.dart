@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -30,6 +31,11 @@ class _CreateNoteViewState extends State<CreateNoteView> {
 
   @override
   Widget build(BuildContext context) {
+ final user = FirebaseAuth
+        .instance
+        .currentUser;
+    final email = user!.email;   
+
     return WillPopScope(
       onWillPop: () async{
        if(title.text. isNotEmpty || content.text.isNotEmpty){
@@ -50,7 +56,7 @@ class _CreateNoteViewState extends State<CreateNoteView> {
                 onTap: (){
                   Get.defaultDialog(
                     title: 'Pick Color',
-                    content: Container(
+                    content: SizedBox(
                       width: MediaQuery.of(context).size.width * .7,
                       height: MediaQuery.of(context).size.height * .3,
                       child: GridView.builder(

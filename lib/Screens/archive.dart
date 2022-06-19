@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:kepp_notes_clone/Screens/search_page.dart';
+import 'package:provider/provider.dart';
 
 import '../Components/SideMenuBar.dart';
+import '../Controllers/google_sign_in_controller.dart';
 import '../Providers/colors.dart';
 import 'create_note.dart';
 import 'note_view.dart';
@@ -25,6 +29,11 @@ class _ArchiveViewState extends State<ArchiveView> {
   final _notes = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
+
+     final user = FirebaseAuth
+        .instance
+        .currentUser;
+    final email = user!.email;   
     return Scaffold(
       key: _drawerKey,
       endDrawerEnableOpenDragGesture: true,
@@ -112,9 +121,95 @@ class _ArchiveViewState extends State<ArchiveView> {
                     SizedBox(
                       width: 10.w,
                     ),
-                    CircleAvatar(
-                      radius: 15.w,
-                      backgroundColor: Colors.white,
+                    InkWell(
+                      onTap: (){
+                        Get.defaultDialog(
+                          backgroundColor: Colors.grey.withOpacity(1),
+                          title: 'Account',
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 42.w,
+                              backgroundColor: bgColor,
+                                child: CircleAvatar(
+                                  radius: 40.w,
+                                  backgroundImage: NetworkImage(user.photoURL!),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10.h,
+                              ),
+                              Text('${user.displayName}',
+                              style:const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              ),
+                              SizedBox(
+                                height: 5.h,
+                              ),
+                              Text('${user.email}',
+                              style:const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              ), 
+                               SizedBox(
+                                height: 3.h,
+                              ), 
+                              Text('${user.phoneNumber}',
+                              style:const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              ),
+                            ],
+                          ),
+                          
+                          confirm: InkWell(
+                            onTap: () {
+                              final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                              provider.logout();
+                              Get.back();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('Logout',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red[900],
+                              ),
+                              ),
+                            ),
+                          ),
+                          cancel: InkWell(
+                             onTap: () async{
+                              final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                             await provider.logout();
+                              provider.signIn();
+                              Get.back();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('Swich Account',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue[900],
+                                
+                              ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 15.w,
+                        backgroundColor: Colors.white,
+                        backgroundImage: NetworkImage(user.photoURL!),
+                      ),
                     )
                   ],
                 ),
@@ -124,7 +219,7 @@ class _ArchiveViewState extends State<ArchiveView> {
         },
         body: SingleChildScrollView(
           child: StreamBuilder<QuerySnapshot>(
-            stream: _notes.collection('notes').snapshots(),
+            stream: _notes.collection(email!).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 var list = snapshot.data!.docs;

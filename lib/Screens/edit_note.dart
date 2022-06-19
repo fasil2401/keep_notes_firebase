@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -32,6 +33,10 @@ class _EditNoteViewState extends State<EditNoteView> {
 
   @override
   Widget build(BuildContext context) {
+     final user = FirebaseAuth
+        .instance
+        .currentUser;
+    final email = user!.email;   
     return WillPopScope(
       onWillPop: () async{
         final note = Note(

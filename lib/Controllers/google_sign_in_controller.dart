@@ -9,7 +9,8 @@ class GoogleSignInProvider extends ChangeNotifier {
 
   Future signIn() async {
 
-    final googleSignInAccount = await googleSignIn.signIn();
+    try {
+      final googleSignInAccount = await googleSignIn.signIn();
 
     if(googleSignInAccount == null) return;
     _currentUser = googleSignInAccount;
@@ -22,9 +23,18 @@ class GoogleSignInProvider extends ChangeNotifier {
     );
 
     await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      print(e.toString());
+    }
 
     notifyListeners();
 
+  }
+
+  Future logout() async {
+    await googleSignIn.disconnect();
+   FirebaseAuth.instance.signOut();
+    // notifyListeners();
   }
 
 }
