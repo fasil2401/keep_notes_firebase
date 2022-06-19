@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../Providers/colors.dart';
+import '../services/services.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({Key? key}) : super(key: key);
@@ -12,31 +14,9 @@ class SearchView extends StatefulWidget {
 }
 
 class _SearchViewState extends State<SearchView> {
-  // List<int> SearchResultIDs = [];
-  // List<KeepNote?> SearchResultNotes = [];
-
-  // bool isLoading = false;
-
-  // void SearchResults(String query) async {
-  //   SearchResultNotes.clear();
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //   final ResultIds = await KeepNotesDatabase.instance.getNoteString(query);
-  //   List<KeepNote?> SearchResultNotesLocal = [];
-  //   ResultIds.forEach((element) async {
-  //     final SearchNote = await KeepNotesDatabase.instance.readOneNote(element);
-  //     SearchResultNotesLocal.add(SearchNote);
-  //     setState(() {
-  //       SearchResultNotes.add(SearchNote);
-  //     });
-  //   });
-
-  //   setState(() {
-  //     isLoading = false;
-  //   });
-  // }
-
+  final services = Services();
+  final _notes = FirebaseFirestore.instance;
+var searchList = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,58 +25,82 @@ class _SearchViewState extends State<SearchView> {
         child: SafeArea(
           child: Container(
             decoration: BoxDecoration(color: white.withOpacity(0.1)),
-            child: Column(
-              children: [
-                Row(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _notes.collection('notes').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var list = snapshot.data!.docs;
+                  return Column(
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(
-                        Icons.arrow_back_outlined,
-                        color: white,
-                      ),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        textInputAction: TextInputAction.search,
-                        style: const TextStyle(
-                          color: white,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          hintText: "Search our Notes",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.arrow_back_outlined,
+                            color: white,
                           ),
                         ),
-                        onSubmitted: (value) {
-                          // setState(
-                          //   () {
-                          //     SearchResults(value.toLowerCase());
-                          //   },
-                          // );
-                        },
-                      ),
+                        Expanded(
+                          child: TextField(
+                            textInputAction: TextInputAction.search,
+                            style: const TextStyle(
+                              color: white,
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              hintText: "Search our Notes",
+                              hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              
+                              list.forEach((element) { 
+                                // searchList.clear();
+                                if (element['title'].toString().toLowerCase().contains(value.toLowerCase())) {
+                                  setState(() {
+                                    
+                                    searchList.add(element);
+                                  });
+                                
+                                }
+                              });
+                              
+                              
+                            },
+                          ),
+                        ),
+                      ],
                     ),
+                    noteSectionAll(searchList),
+                    
+                    // isLoading
+                    //     ? Center(
+                    //         child: CircularProgressIndicator(
+                    //           color: Colors.white,
+                    //         ),
+                    //       )
+                    //     : NoteSectionAll()
                   ],
-                ),
-                NoteSectionAll()
-                // isLoading
-                //     ? Center(
-                //         child: CircularProgressIndicator(
-                //           color: Colors.white,
-                //         ),
-                //       )
-                //     : NoteSectionAll()
-              ],
+                );
+                }
+                else{
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  );
+                }
+              }
             ),
           ),
         ),
@@ -104,7 +108,8 @@ class _SearchViewState extends State<SearchView> {
     );
   }
 
-  Widget NoteSectionAll() {
+  Widget noteSectionAll(list) {
+    print(list);
     return Container(
       child: Column(
         children: [
@@ -124,14 +129,14 @@ class _SearchViewState extends State<SearchView> {
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(
+            padding:const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 15,
             ),
             child: StaggeredGridView.countBuilder(
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: 10,
+              itemCount: searchList.length,
               // itemCount: SearchResultNotes.length,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
@@ -151,9 +156,10 @@ class _SearchViewState extends State<SearchView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Heading',
+                      Text(searchList[index]['title'],
+                          
                         // SearchResultNotes[index]!.title,
-                          style: TextStyle(
+                          style:const TextStyle(
                               color: white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold)),
@@ -161,7 +167,7 @@ class _SearchViewState extends State<SearchView> {
                         height: 10,
                       ),
                       Text(
-                        'sdgfbfghfj',
+                        searchList[index]['note'],
                         // SearchResultNotes[index]!.content.length > 250
                         //     ? "${SearchResultNotes[index]!.content.substring(0, 250)}..."
                         //     : SearchResultNotes[index]!.content,
@@ -176,5 +182,6 @@ class _SearchViewState extends State<SearchView> {
         ],
       ),
     );
+    
   }
 }
