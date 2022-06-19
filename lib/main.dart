@@ -12,6 +12,7 @@ import 'package:kepp_notes_clone/Screens/loginpage.dart';
 import 'package:kepp_notes_clone/Screens/note_view.dart';
 import 'package:kepp_notes_clone/Screens/search_page.dart';
 import 'package:kepp_notes_clone/Screens/settings.dart';
+import 'package:kepp_notes_clone/Screens/splash.dart';
 import 'package:provider/provider.dart';
 import 'Screens/homepage.dart';
 
@@ -44,9 +45,10 @@ class MyApp extends StatelessWidget {
                 .copyWith(secondary: Colors.transparent, primary: Colors.blue),
           ),
           // home: HomePage(),
-          initialRoute: '/first',
+          initialRoute: '/splash',
           
           getPages: [
+            GetPage(name: '/splash', page: ()=> SplashScreen(),),
             GetPage(name: '/first', page: ()=> FirstPage(),),
         GetPage(name: '/login', page: ()=> LoginPage()),
         GetPage(name: '/', page: ()=> HomePage()),
