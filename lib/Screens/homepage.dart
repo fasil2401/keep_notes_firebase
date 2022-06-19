@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -31,6 +32,10 @@ final _notes =
 
   @override
   Widget build(BuildContext context) {
+
+    final user = FirebaseAuth
+        .instance
+        .currentUser;
     return isLoading ? Scaffold(backgroundColor: bgColor, body: Center(child: CircularProgressIndicator(color: Colors.white,),),) : Scaffold(
       key: _drawerKey,
       endDrawerEnableOpenDragGesture: true,
@@ -121,6 +126,7 @@ final _notes =
                     CircleAvatar(
                       radius: 15.w,
                       backgroundColor: Colors.white,
+                      backgroundImage: NetworkImage(user!.photoURL!),
                     )
                   ],
                 ),
