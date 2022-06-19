@@ -31,7 +31,7 @@ var searchList = [];
           child: Container(
             decoration: BoxDecoration(color: white.withOpacity(0.1)),
             child: StreamBuilder<QuerySnapshot>(
-              stream: _notes.collection('notes').snapshots(),
+              stream: _notes.collection(email!).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var list = snapshot.data!.docs;

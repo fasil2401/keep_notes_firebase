@@ -75,7 +75,7 @@ class _NoteViewState extends State<NoteView> {
             IconButton(
               onPressed: () async {
                 final docUser = FirebaseFirestore.instance
-                    .collection('notes')
+                    .collection(email!)
                     .doc(widget.list['id']);
                 docUser.delete();
                 Get.back();

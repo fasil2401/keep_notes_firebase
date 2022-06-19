@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       builder: (context , child) => ChangeNotifierProvider(
         create: (context) => GoogleSignInProvider(),
         child: GetMaterialApp(
-          title: 'Flutter Demo',
+          title: 'NotX',
           debugShowCheckedModeBanner: false,
           theme: theme.copyWith(
             colorScheme: theme.colorScheme

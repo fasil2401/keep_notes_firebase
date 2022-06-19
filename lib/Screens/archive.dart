@@ -118,99 +118,99 @@ class _ArchiveViewState extends State<ArchiveView> {
                       ),
                       splashRadius: .01,
                     ),
-                    SizedBox(
-                      width: 10.w,
-                    ),
-                    InkWell(
-                      onTap: (){
-                        Get.defaultDialog(
-                          backgroundColor: Colors.grey.withOpacity(1),
-                          title: 'Account',
-                          content: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 42.w,
-                              backgroundColor: bgColor,
-                                child: CircleAvatar(
-                                  radius: 40.w,
-                                  backgroundImage: NetworkImage(user.photoURL!),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 10.h,
-                              ),
-                              Text('${user.displayName}',
-                              style:const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              ),
-                              SizedBox(
-                                height: 5.h,
-                              ),
-                              Text('${user.email}',
-                              style:const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              ), 
-                               SizedBox(
-                                height: 3.h,
-                              ), 
-                              Text('${user.phoneNumber}',
-                              style:const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              ),
-                            ],
-                          ),
+                    // SizedBox(
+                    //   width: 10.w,
+                    // ),
+                    // InkWell(
+                    //   onTap: (){
+                    //     Get.defaultDialog(
+                    //       backgroundColor: Colors.grey.withOpacity(1),
+                    //       title: 'Account',
+                    //       content: Column(
+                    //         crossAxisAlignment: CrossAxisAlignment.center,
+                    //         children: [
+                    //           CircleAvatar(
+                    //             radius: 42.w,
+                    //           backgroundColor: bgColor,
+                    //             child: CircleAvatar(
+                    //               radius: 40.w,
+                    //               backgroundImage: NetworkImage(user.photoURL!),
+                    //             ),
+                    //           ),
+                    //           SizedBox(
+                    //             height: 10.h,
+                    //           ),
+                    //           Text('${user.displayName}',
+                    //           style:const TextStyle(
+                    //             fontSize: 20,
+                    //             fontWeight: FontWeight.w600,
+                    //           ),
+                    //           ),
+                    //           SizedBox(
+                    //             height: 5.h,
+                    //           ),
+                    //           Text('${user.email}',
+                    //           style:const TextStyle(
+                    //             fontSize: 15,
+                    //             fontWeight: FontWeight.w500,
+                    //           ),
+                    //           ), 
+                    //            SizedBox(
+                    //             height: 3.h,
+                    //           ), 
+                    //           Text('${user.phoneNumber}',
+                    //           style:const TextStyle(
+                    //             fontSize: 15,
+                    //             fontWeight: FontWeight.w500,
+                    //           ),
+                    //           ),
+                    //         ],
+                    //       ),
                           
-                          confirm: InkWell(
-                            onTap: () {
-                              final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
-                              provider.logout();
-                              Get.back();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text('Logout',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.red[900],
-                              ),
-                              ),
-                            ),
-                          ),
-                          cancel: InkWell(
-                             onTap: () async{
-                              final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
-                             await provider.logout();
-                              provider.signIn();
-                              Get.back();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text('Swich Account',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue[900],
+                    //       confirm: InkWell(
+                    //         onTap: () {
+                    //           final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                    //           provider.logout();
+                    //           Get.back();
+                    //         },
+                    //         child: Padding(
+                    //           padding: const EdgeInsets.all(8.0),
+                    //           child: Text('Logout',
+                    //           style: TextStyle(
+                    //             fontSize: 20,
+                    //             fontWeight: FontWeight.w600,
+                    //             color: Colors.red[900],
+                    //           ),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //       cancel: InkWell(
+                    //          onTap: () async{
+                    //           final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                    //          await provider.logout();
+                    //           provider.signIn();
+                    //           Get.back();
+                    //         },
+                    //         child: Padding(
+                    //           padding: const EdgeInsets.all(8.0),
+                    //           child: Text('Swich Account',
+                    //           style: TextStyle(
+                    //             fontSize: 20,
+                    //             fontWeight: FontWeight.w600,
+                    //             color: Colors.blue[900],
                                 
-                              ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      child: CircleAvatar(
-                        radius: 15.w,
-                        backgroundColor: Colors.white,
-                        backgroundImage: NetworkImage(user.photoURL!),
-                      ),
-                    )
+                    //           ),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: CircleAvatar(
+                    //     radius: 15.w,
+                    //     backgroundColor: Colors.white,
+                    //     backgroundImage: NetworkImage(user.photoURL!),
+                    //   ),
+                    // )
                   ],
                 ),
               ),

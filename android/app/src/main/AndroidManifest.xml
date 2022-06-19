@@ -2,7 +2,7 @@
     package="com.example.kepp_notes_clone">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="kepp_notes_clone"
+        android:label="NotX"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
