@@ -135,7 +135,7 @@ class _SideMenuState extends State<SideMenu> {
           // backgroundColor:
           //     MaterialStateProperty.all(Colors.orangeAccent.withOpacity(0.3)),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
+           const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                   topRight: Radius.circular(50),
                   bottomRight: Radius.circular(50)),
@@ -144,7 +144,7 @@ class _SideMenuState extends State<SideMenu> {
         ),
         onPressed: () {
           Get.back();
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SettingsScreen()));
+          Get.toNamed('/settings');
           
         },
         child: Container(

@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kepp_notes_clone/model/note_model.dart';
 import '../Providers/colors.dart';
+import '../Providers/notification.dart';
 import '../services/services.dart';
 import 'edit_note.dart';
 
@@ -21,6 +23,9 @@ class _NoteViewState extends State<NoteView> {
   bool? pinned;
   bool? archieved;
   final services = Services();
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -32,12 +37,38 @@ class _NoteViewState extends State<NoteView> {
 
   @override
   Widget build(BuildContext context) {
-     final user = FirebaseAuth
-        .instance
-        .currentUser;
-    final email = user!.email;   
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user!.email;
     return WillPopScope(
       onWillPop: () async {
+        print(selectedDate);
+ if (selectedDate != null) {
+            createReminderNotification(
+                notificationSchedule: DateTime(
+                    selectedDate!.year,
+                    selectedDate!.month,
+                    selectedDate!.day,
+                    selectedTime!.hour,
+                    selectedTime!.minute,
+                    00),
+                title:  widget.list['title'],
+                note: widget.list['note'],
+                key:  createUniqueId());
+          }
+         else if (selectedDate != null) {
+            AwesomeNotifications().cancelSchedule(widget.list['id']);
+            createReminderNotification(
+                notificationSchedule: DateTime(
+                    selectedDate!.year,
+                    selectedDate!.month,
+                    selectedDate!.day,
+                    selectedTime!.hour,
+                    selectedTime!.minute,
+                    00),
+                title: widget.list['title'],
+                note: widget.list['note'],
+                key: createUniqueId());
+          }
         final note = Note(
             title: widget.list['title'],
             note: widget.list['note'],
@@ -46,6 +77,8 @@ class _NoteViewState extends State<NoteView> {
             ispinned: pinned!,
             color: widget.list['color']);
         await services.updateNote(note, widget.list['id'].toString());
+
+       
         return true;
       },
       child: Scaffold(
@@ -64,14 +97,42 @@ class _NoteViewState extends State<NoteView> {
                     ? const Icon(Icons.push_pin)
                     : const Icon(Icons.push_pin_outlined)),
             IconButton(
-                onPressed: () async {
-                  setState(() {
-                    archieved = !archieved!;
-                  });
-                },
-                icon: archieved == true
-                    ? const Icon(Icons.archive)
-                    : const Icon(Icons.archive_outlined)),
+              onPressed: () async {
+                setState(() {
+                  archieved = !archieved!;
+                });
+              },
+              icon: archieved == true
+                  ? const Icon(Icons.archive)
+                  : const Icon(Icons.archive_outlined),
+            ),
+            IconButton(
+              onPressed: () {
+                showDatePicker(
+                    context: context,
+                    initialDate: selectedDate ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(DateTime
+                        .now()
+                        .year + 5))
+                    .then((value) {
+                  if (value != null) {
+                    selectedDate = value;
+                    showTimePicker(
+                        context: context,
+                        initialTime: selectedTime ?? TimeOfDay.now())
+                        .then((value) {
+                      if (value != null) {
+                        selectedTime = value;
+                        setState(() {});
+                      }
+                    });
+                  }
+                });
+              },
+              icon: const Icon(Icons.notifications_active_outlined),
+              splashRadius: 20,
+            ),
             IconButton(
               onPressed: () async {
                 final docUser = FirebaseFirestore.instance
