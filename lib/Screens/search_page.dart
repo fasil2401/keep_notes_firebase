@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-
+import 'package:get/get.dart';
+import '../Controllers/emailcontroller.dart';
 import '../Providers/colors.dart';
 import '../services/services.dart';
 
@@ -15,6 +16,8 @@ class SearchView extends StatefulWidget {
 }
 
 class _SearchViewState extends State<SearchView> {
+
+  final emailController = Get.put(EmailController());
   final services = Services();
   final _notes = FirebaseFirestore.instance;
 var searchList = [];
@@ -31,7 +34,7 @@ var searchList = [];
           child: Container(
             decoration: BoxDecoration(color: white.withOpacity(0.1)),
             child: StreamBuilder<QuerySnapshot>(
-              stream: _notes.collection(email!).snapshots(),
+              stream: _notes.collection(emailController.email.value).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var list = snapshot.data!.docs;

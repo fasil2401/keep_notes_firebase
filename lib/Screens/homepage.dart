@@ -10,6 +10,7 @@ import 'package:kepp_notes_clone/Screens/search_page.dart';
 import 'package:provider/provider.dart';
 
 import '../Components/SideMenuBar.dart';
+import '../Controllers/emailcontroller.dart';
 import '../Providers/colors.dart';
 import 'create_note.dart';
 import 'note_view.dart';
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
   String searchText = '';
 final _notes =
       FirebaseFirestore.instance;
-
+final emailController = Get.put(EmailController());
   @override
   Widget build(BuildContext context) {
 
@@ -225,7 +226,7 @@ final _notes =
         },
         body: SingleChildScrollView(
           child: StreamBuilder<QuerySnapshot>(
-            stream: _notes.collection(email!).snapshots(),
+            stream: _notes.collection(emailController.email.value).snapshots(),
             builder: (context, snapshot) {
              if(snapshot.hasData){
               var list = snapshot.data!.docs;
