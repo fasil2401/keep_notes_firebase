@@ -162,15 +162,15 @@ final emailController = Get.put(EmailController());
                                 fontWeight: FontWeight.w500,
                               ),
                               ), 
-                               SizedBox(
-                                height: 3.h,
-                              ), 
-                              Text('${user.phoneNumber}',
-                              style:const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              ),
+                              //  SizedBox(
+                              //   height: 3.h,
+                              // ), 
+                              // Text('${user.phoneNumber}',
+                              // style:const TextStyle(
+                              //   fontSize: 15,
+                              //   fontWeight: FontWeight.w500,
+                              // ),
+                              // ),
                             ],
                           ),
                           
